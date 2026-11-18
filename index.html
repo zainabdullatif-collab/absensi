@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Absensi Al Fath Abdurahman</title>
+<meta name="theme-color" content="#1f4e78">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Absensi">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="ikon-180.png">
+<link rel="icon" type="image/png" href="ikon-192.png">
+<style>
+  :root { --biru:#1f4e78; --biru2:#2e6da4; --hijau:#1e8e3e; --oranye:#e37400; --merah:#c5221f;
+          --abu:#f1f4f8; --teks:#1d2733; --redup:#6b7785; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+         background:var(--abu); color:var(--teks); }
+  header { background:var(--biru); color:#fff; padding:18px 16px; text-align:center; }
+  header h1 { margin:0; font-size:20px; }
+  main { max-width:460px; margin:0 auto; padding:16px; }
+  .kartu { background:#fff; border-radius:14px; padding:20px; box-shadow:0 2px 10px rgba(0,0,0,.06); margin-bottom:16px; }
+  label { display:block; font-weight:600; font-size:14px; margin:12px 0 6px; }
+  input, textarea { width:100%; padding:12px; font-size:16px; border:1px solid #cfd6de; border-radius:10px; font-family:inherit; }
+  input:focus, textarea:focus { outline:2px solid var(--biru2); border-color:transparent; }
+  .nik-wrap { position:relative; }
+  .nik-wrap button { position:absolute; right:6px; top:6px; border:0; background:none; color:var(--biru2);
+                     font-size:13px; padding:8px; cursor:pointer; }
+  button.btn { width:100%; padding:14px; font-size:16px; font-weight:700; border:0; border-radius:10px;
+               color:#fff; cursor:pointer; margin-top:12px; }
+  button.btn:disabled { opacity:.4; cursor:not-allowed; }
+  .b-biru{background:var(--biru2)} .b-hijau{background:var(--hijau)} .b-oranye{background:var(--oranye)}
+  .b-abu{background:#5f6b78}
+  .dua { display:flex; gap:10px; } .dua .btn { flex:1; }
+  .pesan { margin-top:12px; padding:10px 12px; border-radius:8px; font-size:14px; display:none; }
+  .pesan.err { display:block; background:#fde8e7; color:var(--merah); }
+  .pesan.ok  { display:block; background:#e6f4ea; color:var(--hijau); }
+  .pesan.warn { display:block; background:#fef0e0; color:#a14d00; font-weight:600; border:1px solid #f5c27a; }
+  .pesan.warn b { display:block; font-size:22px; margin-bottom:2px; }
+  .tab2 { display:flex; background:var(--abu); border-radius:10px; padding:4px; gap:4px; }
+  .tab2 button { flex:1; border:0; background:none; padding:9px; border-radius:8px; font-size:14px; font-weight:600;
+                 color:var(--redup); cursor:pointer; font-family:inherit; }
+  .tab2 button.aktif { background:#fff; color:var(--biru); box-shadow:0 1px 3px rgba(0,0,0,.1); }
+  .ring { display:grid; grid-template-columns:repeat(6, 1fr); gap:10px; margin-top:12px; }
+  .ring div { border-radius:10px; padding:10px 12px; grid-column:span 2; }
+  .ring .r-t, .ring .r-c { grid-column:span 3; }
+  .ring small { display:block; font-size:12px; color:var(--redup); }
+  .ring b { font-size:22px; }
+  .ring span { font-size:12px; color:var(--redup); margin-left:4px; }
+  .r-t { background:#fef0e0; } .r-c { background:#fff4d6; } .r-a { background:#fde8e7; } .r-i { background:#e8f0fe; } .r-s { background:#f3e8fd; }
+  details { margin-top:10px; border:1px solid #e6eaef; border-radius:10px; padding:8px 12px; }
+  summary { font-weight:600; font-size:14px; cursor:pointer; }
+  details ul { margin:8px 0 2px; padding-left:18px; font-size:14px; }
+  details li { margin-bottom:5px; }
+  details li small { color:var(--redup); }
+  .badge { display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; margin-left:4px; }
+  .bg-tunggu { background:#fef0e0; color:#a14d00; } .bg-setuju { background:#e6f4ea; color:#1e8e3e; }
+  .bg-tolak { background:#fde8e7; color:#c5221f; }
+  .ajukan { border:1px solid var(--biru2); background:#fff; color:var(--biru2); border-radius:20px; font-size:12px;
+            font-weight:700; padding:3px 10px; margin-left:4px; cursor:pointer; font-family:inherit; }
+  .tolak-ket { display:block; font-size:12px; color:var(--merah); margin-top:2px; }
+  #pFoto { max-width:100%; max-height:260px; border-radius:10px; margin-top:8px; display:block; }
+  #pFoto.hidden { display:none; }
+  input[type=file] { font-size:14px; padding:10px; background:var(--abu); }
+  .jam { font-size:40px; font-weight:800; text-align:center; letter-spacing:1px; }
+  .tgl { text-align:center; color:var(--redup); margin-bottom:6px; }
+  .halo { font-size:18px; font-weight:700; margin:0; }
+  .unit { color:var(--redup); font-size:13px; margin-top:4px; }
+  .status { display:flex; gap:10px; margin-top:14px; }
+  .status div { flex:1; background:var(--abu); border-radius:10px; padding:10px; text-align:center; }
+  .status small { display:block; color:var(--redup); font-size:12px; }
+  .status b { font-size:18px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th, td { padding:8px 6px; border-bottom:1px solid #e6eaef; text-align:left; }
+  th { color:var(--redup); font-weight:600; font-size:12px; }
+  .link { background:none; border:0; color:var(--biru2); cursor:pointer; font-size:14px; padding:0; }
+  .tengah { text-align:center; }
+  .hidden { display:none; }
+  .catatan { font-size:13px; color:var(--redup); margin-top:8px; }
+  .target { margin-top:14px; border-top:1px solid #e6eaef; padding-top:12px; font-size:14px; }
+  .target small { display:block; color:var(--redup); font-size:12px; margin-bottom:6px; }
+  .target .bar { height:10px; background:var(--abu); border-radius:6px; overflow:hidden; margin:6px 0; }
+  .target .isi { height:100%; background:var(--biru2); border-radius:6px; }
+  .target.cukup .isi { background:var(--hijau); }
+  .jadwal { margin-top:14px; border-top:1px solid #e6eaef; padding-top:12px; }
+  .jadwal small { display:block; color:var(--redup); font-size:12px; margin-bottom:8px; }
+  .shift { display:flex; justify-content:space-between; align-items:center; padding:8px 10px;
+           border-radius:8px; background:var(--abu); margin-bottom:6px; font-size:14px; }
+  .shift .st { font-size:12px; font-weight:700; }
+  .shift.sudah .st { color:var(--hijau); }
+  .shift.lewat .st { color:var(--merah); }
+  .shift.nanti .st { color:var(--redup); }
+  .peringatan { background:#fff4e5; border:1px solid #f5c27a; color:#7a4a00; border-radius:14px;
+                padding:16px 18px; margin-bottom:16px; font-size:15px; line-height:1.5; }
+  .peringatan b.judul { display:block; font-size:16px; margin-bottom:6px; color:#5c3700; }
+  .peringatan ol { margin:8px 0 0; padding-left:20px; }
+  .peringatan li { margin-bottom:4px; }
+  .peringatan .link { margin-top:10px; font-size:13px; color:#7a4a00; text-decoration:underline; }
+</style>
+</head>
+<body>
+<header><h1>Absensi Guru dan Karyawan<br>Yayasan Al Fath Abdurahman Payakumbuh</h1></header>
+<main>
+
+  <!-- PERINGATAN BROWSER (WhatsApp / aplikasi lain / iPhone bukan dari Layar Utama) -->
+  <div id="vPeringatan" class="peringatan hidden"></div>
+
+  <!-- LOGIN -->
+  <section id="vLogin" class="kartu hidden">
+    <h2 style="margin-top:0">Masuk</h2>
+    <form id="fLogin" autocomplete="off">
+      <label for="iNama">Nama</label>
+      <input id="iNama" placeholder="Nama lengkap sesuai data" autocapitalize="characters" required>
+      <label for="iNik">Password (<span class="kolomPw">NIY</span>)</label>
+      <div class="nik-wrap">
+        <input id="iNik" type="password" placeholder="Nomor NIY" required>
+        <button type="button" id="bLihat">Lihat</button>
+      </div>
+      <button class="btn b-biru" id="bLogin" type="submit">Masuk</button>
+    </form>
+    <div id="mLogin" class="pesan"></div>
+    <button type="button" class="btn b-abu hidden" id="bReset">Ajukan Reset Perangkat ke Admin</button>
+    <div class="catatan">Satu akun hanya bisa dipakai di satu HP/tablet. Login pertama akan mendaftarkan perangkat ini untuk akun Anda.</div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section id="vDash" class="hidden">
+    <div class="kartu">
+      <p class="halo" id="tNama"></p>
+      <div class="unit" id="tUnit"></div>
+      <div class="status">
+        <div><small>Masuk terakhir</small><b id="sMasuk">–</b></div>
+        <div><small>Pulang terakhir</small><b id="sPulang">–</b></div>
+      </div>
+      <div class="catatan tengah" id="sKet"></div>
+      <div id="sTarget" class="target hidden"></div>
+      <div id="sJadwal" class="jadwal hidden"></div>
+    </div>
+
+    <div class="kartu">
+      <div class="tgl" id="tTgl"></div>
+      <div class="jam" id="tJam">--:--:--</div>
+      <button class="btn b-hijau" id="bMasuk">Absen Masuk</button>
+      <button class="btn b-biru" id="bPulang">Absen Pulang</button>
+      <div class="dua">
+        <button class="btn b-oranye" id="bIzin">Izin</button>
+        <button class="btn b-abu" id="bSakit">Sakit</button>
+      </div>
+      <div id="fKet" class="hidden">
+        <label for="iKet" id="lKet">Keterangan</label>
+        <textarea id="iKet" rows="3" maxlength="300" placeholder="Tulis alasan singkat"></textarea>
+        <div class="dua">
+          <button class="btn b-abu" id="bBatal">Batal</button>
+          <button class="btn b-biru" id="bKirim">Kirim</button>
+        </div>
+      </div>
+      <div id="mAbsen" class="pesan"></div>
+      <div class="catatan tengah">Jam yang dicatat adalah jam server (WIB).<span id="tInfoLokasi"> Absen masuk/pulang hanya bisa di lokasi yang ditentukan; aktifkan GPS.</span></div>
+    </div>
+
+    <div class="kartu">
+      <div class="tab2"><button type="button" id="bRBini" class="aktif">Bulan ini</button><button type="button" id="bRBlalu">Bulan lalu</button></div>
+      <h3 style="margin:12px 0 0;font-size:16px" id="rJudul">Rekap kehadiran</h3>
+      <div class="ring">
+        <div class="r-t"><small>Terlambat</small><b id="rTelat">–</b><span id="rTelatM"></span></div>
+        <div class="r-c"><small>Pulang cepat</small><b id="rCepat">–</b><span id="rCepatM"></span></div>
+        <div class="r-a"><small>Alfa</small><b id="rAlfa">–</b><span id="rAlfaM">hari</span></div>
+        <div class="r-i"><small>Izin</small><b id="rIzin">–</b><span>hari</span></div>
+        <div class="r-s"><small>Sakit</small><b id="rSakit">–</b><span>hari</span></div>
+      </div>
+      <div id="rRinci"></div>
+      <div class="catatan">Angka bisa berubah bila admin melakukan koreksi atau memberi dispensasi.</div>
+    </div>
+
+    <div class="kartu hidden" id="vMaaf">
+      <h3 style="margin-top:0" id="tMaafJudul">Ajukan maaf keterlambatan</h3>
+      <div class="catatan" id="tMaafInfo" style="margin-top:0;font-size:14px;color:var(--teks)"></div>
+      <label for="iAlasan">Alasan</label>
+      <textarea id="iAlasan" rows="3" maxlength="500" placeholder="Tulis alasan dengan jelas"></textarea>
+      <label for="iFoto">Foto bukti</label>
+      <input id="iFoto" type="file" accept="image/*">
+      <img id="pFoto" class="hidden" alt="Pratinjau foto bukti">
+      <div class="catatan">Foto hanya dilihat admin. Pengajuan akan diperiksa; jika disetujui, tidak akan dihitung.</div>
+      <div class="dua">
+        <button type="button" class="btn b-abu" id="bMaafBatal">Batal</button>
+        <button type="button" class="btn b-biru" id="bMaafKirim">Kirim pengajuan</button>
+      </div>
+      <div id="mMaaf" class="pesan"></div>
+    </div>
+
+    <div class="kartu">
+      <h3 style="margin-top:0">Riwayat terakhir</h3>
+      <table>
+        <thead><tr><th>Tanggal</th><th>Masuk</th><th>Pulang</th><th>Ket.</th></tr></thead>
+        <tbody id="tRiwayat"><tr><td colspan="4">Memuat…</td></tr></tbody>
+      </table>
+    </div>
+
+    <p class="tengah"><button class="link" id="bKeluar">Keluar</button></p>
+  </section>
+
+  <p id="vMuat" class="tengah">Memuat…</p>
+</main>
+
+<script>
+  // =====================================================================
+  //  ALAMAT SERVER: isi dengan URL Web App Apps Script (yang berakhiran /exec)
+  //  Apps Script → Terapkan → Kelola deployment → salin "URL aplikasi web".
+  // =====================================================================
+  const API_URL = 'https://script.google.com/macros/s/AKfycbylbZcl1qtSCosIhc4Y_9bMM10PoRnap-kq1ayL0Ms-Ys2O8kwbKoimw0rziEp9ZEuzHw/exec';
+
+  let WAJIB_LOKASI = true, KOLOM_PASSWORD = 'NIY';
+  const $ = id => document.getElementById(id);
+  let token = null, jenisKet = null;
+
+  // ID unik perangkat. Disimpan di DUA tempat (localStorage + cookie) agar tidak mudah hilang di iPhone.
+  // Catatan: ID TIDAK disimpan di alamat link, karena ID ini bisa dipakai login otomatis.
+  const KUNCI_PERANGKAT = 'absen_perangkat';
+  function bacaCookie(n) {
+    try { const m = document.cookie.match('(?:^|; )' + n + '=([^;]*)'); return m ? decodeURIComponent(m[1]) : ''; }
+    catch (e) { return ''; }
+  }
+  function tulisCookie(n, v) {
+    try { document.cookie = n + '=' + encodeURIComponent(v) + '; max-age=34560000; path=/; SameSite=None; Secure'; } catch (e) {}
+  }
+  function idPerangkat() {
+    let id = '';
+    try { id = localStorage.getItem(KUNCI_PERANGKAT) || ''; } catch (e) {}
+    if (!id) id = bacaCookie(KUNCI_PERANGKAT);
+    if (!id) {
+      id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+        : Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
+    }
+    let tersimpan = false;
+    try { localStorage.setItem(KUNCI_PERANGKAT, id); tersimpan = localStorage.getItem(KUNCI_PERANGKAT) === id; } catch (e) {}
+    tulisCookie(KUNCI_PERANGKAT, id);
+    if (!tersimpan && bacaCookie(KUNCI_PERANGKAT) !== id) return null;
+    return id;
+  }
+  function infoPerangkat() {
+    const ua = navigator.userAgent, m = ua.match(/\(([^)]+)\)/);
+    return (m ? m[1] : ua).slice(0, 120) + ' | ' + screen.width + 'x' + screen.height;
+  }
+  // Ciri HP yang stabil (tidak berubah saat update iOS/Android), untuk memulihkan akun bila ID terhapus
+  function sidikPerangkat() {
+    const ua = navigator.userAgent || '', tp = navigator.maxTouchPoints || 0;
+    const jenis = /iPhone/.test(ua) ? 'iPhone'
+      : (/iPad/.test(ua) || (/Macintosh/.test(ua) && tp > 1)) ? 'iPad'
+      : /Android/.test(ua) ? 'Android' : /Windows/.test(ua) ? 'Windows' : /Mac/.test(ua) ? 'Mac' : 'Lain';
+    let model = (ua.match(/Android [\d.]+; ([^;)]+)/) || [])[1] || '';
+    if (model === 'K') model = '';
+    const a = Math.min(screen.width, screen.height), b = Math.max(screen.width, screen.height);
+    let tz = ''; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) {}
+    return [jenis, model, a + 'x' + b, window.devicePixelRatio || 1, tz, navigator.hardwareConcurrency || '', tp].join('|');
+  }
+  const PERANGKAT = idPerangkat();
+  function dataPerangkat() { return { id: PERANGKAT, info: infoPerangkat(), sidik: sidikPerangkat(), asal: 'halaman-baru' }; }
+
+  // Deteksi cara halaman dibuka.
+  // - Browser di dalam aplikasi (WhatsApp, Facebook, Instagram, dll) punya penyimpanan sendiri,
+  //   sehingga ID perangkat berbeda dari Chrome/Safari -> absen ditolak.
+  // - Di iPhone, ikon Layar Utama juga punya penyimpanan sendiri (terpisah dari Safari),
+  //   jadi iPhone diarahkan untuk SELALU memakai ikon Layar Utama.
+  function cekBrowser() {
+    const ua = navigator.userAgent || '';
+    const iOS = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const dalamAplikasi = /FBAN|FBAV|FB_IAB|Instagram|Line\/|WhatsApp|Telegram|TikTok|musical_ly|; wv\)/i.test(ua);
+    let layarUtama = false;
+    try {
+      layarUtama = window.navigator.standalone === true ||
+        (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    } catch (e) {}
+    if (dalamAplikasi && !iOS) return 'android-aplikasi';
+    if (iOS && !layarUtama) return 'ios';
+    return null;
+  }
+
+  function tampilPeringatan() {
+    const jenis = cekBrowser();
+    const kotak = $('vPeringatan');
+    if (!jenis) return;
+
+    if (jenis === 'android-aplikasi') {
+      kotak.innerHTML =
+        '<b class="judul">Buka di Google Chrome</b>' +
+        'Anda membuka absensi dari dalam aplikasi lain (WhatsApp, Facebook, dll). ' +
+        'Absen tidak akan terbaca benar di sini.' +
+        '<ol><li>Ketuk <b>⋮</b> di kanan atas</li>' +
+        '<li>Pilih <b>Buka di Chrome</b></li>' +
+        '<li>Di Chrome: <b>⋮ → Tambahkan ke layar utama</b>, lalu selalu absen dari ikon itu</li></ol>';
+      kotak.classList.remove('hidden');
+      $('bLogin').disabled = true;
+      $('bLogin').textContent = 'Buka di Chrome terlebih dahulu';
+      return 'blokir';
+    }
+
+    if (jenis === 'ios') {
+      // iPhone/iPad: Safari dan ikon Layar Utama menyimpan data terpisah. Agar HP selalu dikenali,
+      // absensi HANYA boleh dari ikon Layar Utama (tidak ada tombol lewati).
+      kotak.innerHTML =
+        '<b class="judul">Pengguna iPhone: pasang dulu di Layar Utama</b>' +
+        'Absensi di iPhone hanya bisa dari <b>ikon di Layar Utama</b>, agar HP Anda selalu dikenali.' +
+        '<ol><li>Jika halaman ini terbuka dari WhatsApp: ketuk ikon <b>Safari / kompas</b> untuk membukanya di Safari ' +
+        '(atau tekan lama link → Salin → tempel di Safari)</li>' +
+        '<li>Di Safari, ketuk <b>Bagikan</b> (kotak dengan panah ke atas) → <b>Tambahkan ke Layar Utama</b> → <b>Tambah</b></li>' +
+        '<li>Tutup Safari, lalu buka absensi dari <b>ikon "Absensi"</b> di Layar Utama</li></ol>';
+      kotak.classList.remove('hidden');
+      $('bLogin').disabled = true;
+      $('bLogin').textContent = 'Buka dari ikon Layar Utama';
+      return 'blokir';
+    }
+  }
+
+  function simpanToken(t) {
+    token = t;
+    try { t ? sessionStorage.setItem('absen_token', t) : sessionStorage.removeItem('absen_token'); } catch (e) {}
+  }
+  function ambilToken() { try { return sessionStorage.getItem('absen_token'); } catch (e) { return null; } }
+
+  // Login otomatis lewat perangkat terdaftar (tanpa ketik nama & NIY)
+  async function loginOtomatis() {
+    if (!PERANGKAT) return null;
+    try {
+      const r = await panggil('loginPerangkat', dataPerangkat());
+      if (r && r.ok) { simpanToken(r.token); return r; }
+    } catch (e) { console.warn('Login otomatis gagal:', e); }
+    return null;
+  }
+
+  // Panggil fungsi di server (Apps Script) lewat internet
+  async function panggil(fn, ...args) {
+    if (API_URL.indexOf('/exec') < 0 || API_URL.indexOf('GANTI') > -1) {
+      throw new Error('Admin belum mengisi alamat server (API_URL) di halaman ini.');
+    }
+    const ctrl = window.AbortController ? new AbortController() : null;
+    const tunda = ctrl ? setTimeout(() => ctrl.abort(), 90000) : null;
+    let res;
+    try {
+      res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },   // tanpa preflight CORS
+        body: JSON.stringify({ fn: fn, args: args }),
+        redirect: 'follow',
+        signal: ctrl ? ctrl.signal : undefined
+      });
+    } catch (e) {
+      throw new Error('Gagal terhubung ke server. Periksa koneksi internet lalu coba lagi.');
+    } finally {
+      if (tunda) clearTimeout(tunda);
+    }
+    if (!res.ok) throw new Error('Server sedang bermasalah (HTTP ' + res.status + '). Coba lagi sebentar lagi.');
+    let j;
+    try { j = await res.json(); }
+    catch (e) { throw new Error('Jawaban server tidak terbaca. Pastikan Web App di-deploy untuk "Siapa saja".'); }
+    if (!j.ok) throw new Error(j.error || 'Terjadi kesalahan di server.');
+    return j.data;
+  }
+  function tampil(view) {
+    ['vLogin', 'vDash', 'vMuat'].forEach(v => $(v).classList.toggle('hidden', v !== view));
+  }
+  function pesan(el, teks, jenis) { el.textContent = teks; el.className = 'pesan ' + (teks ? jenis : ''); }
+  function sesiHabis(err) {
+    if (err && String(err.message || err).indexOf('SESI_HABIS') > -1) {
+      simpanToken(null); tampil('vLogin');
+      pesan($('mLogin'), 'Sesi berakhir, silakan masuk lagi.', 'err');
+      return true;
+    }
+    return false;
+  }
+
+  // Jam & tanggal
+  function detak() {
+    const d = new Date();
+    $('tJam').textContent = d.toLocaleTimeString('id-ID', { hour12: false });
+    $('tTgl').textContent = d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  }
+  setInterval(detak, 1000); detak();
+
+  // Login
+  $('bLihat').onclick = () => {
+    const i = $('iNik'); const lihat = i.type === 'password';
+    i.type = lihat ? 'text' : 'password'; $('bLihat').textContent = lihat ? 'Sembunyi' : 'Lihat';
+  };
+  $('fLogin').onsubmit = async e => {
+    e.preventDefault();
+    const b = $('bLogin'); b.disabled = true; b.textContent = 'Memeriksa…'; pesan($('mLogin'), '', '');
+    $('bReset').classList.add('hidden');
+    try {
+      if (!PERANGKAT) {
+        pesan($('mLogin'), 'Browser ini tidak mengizinkan penyimpanan data. Matikan mode penyamaran (incognito) lalu coba lagi.', 'err');
+        return;
+      }
+      const nama = $('iNama').value, nik = $('iNik').value;
+      const r = await panggil('login', nama, nik, dataPerangkat());
+      if (!r.ok) {
+        pesan($('mLogin'), r.pesan, 'err');
+        // Terdaftar di HP lain -> karyawan bisa mengajukan reset ke admin
+        if (/perangkat lain/i.test(r.pesan || '')) $('bReset').classList.remove('hidden');
+        return;
+      }
+      simpanToken(r.token); $('iNik').value = '';
+      bukaDashboard(r.profil, r.status);
+      if (r.perangkatBaru) pesan($('mAbsen'), 'Perangkat ini sudah didaftarkan untuk akun Anda. Absen berikutnya hanya bisa dari perangkat ini.', 'ok');
+    } catch (err) {
+      pesan($('mLogin'), 'Gagal terhubung: ' + (err.message || err), 'err');
+    } finally { b.disabled = false; b.textContent = 'Masuk'; }
+  };
+
+  // Karyawan mengajukan reset perangkat (admin cukup mencentang kolom ResetPerangkat)
+  $('bReset').onclick = async () => {
+    const nama = $('iNama').value, nik = $('iNik').value;
+    if (!nama || !nik) return pesan($('mLogin'), 'Isi nama dan password terlebih dahulu.', 'err');
+    const alasan = prompt('Alasan reset (contoh: ganti HP, data Safari terhapus):', 'Data browser terhapus');
+    if (alasan === null) return;
+    const b = $('bReset'); b.disabled = true;
+    try {
+      const r = await panggil('ajukanResetPerangkat', nama, nik, alasan, dataPerangkat());
+      pesan($('mLogin'), r.pesan, r.ok ? 'ok' : 'err');
+      if (r.ok) b.classList.add('hidden');
+    } catch (err) {
+      pesan($('mLogin'), 'Gagal mengirim: ' + (err.message || err), 'err');
+    } finally { b.disabled = false; }
+  };
+
+  // Dashboard
+  function bukaDashboard(profil, status) {
+    $('vPeringatan').classList.add('hidden');
+    $('tNama').textContent = 'Halo, ' + profil.nama;
+    $('tUnit').textContent = profil.unit;
+    pesan($('mAbsen'), '', '');
+    aturStatus(status); tampil('vDash'); muatRiwayat(); muatRekap(0);
+  }
+
+  // Rekap pribadi bulan ini / bulan lalu
+  let modeRekap = 0;
+  $('bRBini').onclick = () => muatRekap(0);
+  $('bRBlalu').onclick = () => muatRekap(1);
+  async function muatRekap(m) {
+    modeRekap = m;
+    $('bRBini').classList.toggle('aktif', m === 0);
+    $('bRBlalu').classList.toggle('aktif', m === 1);
+    ['rTelat', 'rCepat', 'rAlfa', 'rIzin', 'rSakit'].forEach(id => $(id).textContent = '…');
+    $('rTelatM').textContent = ''; $('rCepatM').textContent = ''; $('rRinci').innerHTML = '';
+    try {
+      const r = await panggil('rekapSaya', token, PERANGKAT, m);
+      if (m !== modeRekap) return;                      // pengguna sudah pindah tab
+      $('rJudul').textContent = 'Rekap ' + r.judul;
+      $('rTelat').textContent = r.telat.kali + '×';
+      $('rTelatM').textContent = r.telat.menit + ' menit';
+      const cp = r.cepat || { kali: 0, menit: 0, rincian: [] };
+      $('rCepat').textContent = cp.kali + '×';
+      $('rCepatM').textContent = cp.menit + ' menit';
+      const ah = r.alfa.hari != null ? r.alfa.hari : r.alfa.jumlah;
+      $('rAlfa').textContent = ah;
+      $('rAlfaM').textContent = 'hari' + (r.alfa.jumlah !== ah ? ' · ' + r.alfa.jumlah + ' shift' : '');
+      $('rIzin').textContent = r.izin.jumlah;
+      $('rSakit').textContent = r.sakit.jumlah;
+      const kotak = $('rRinci');
+      const blok = (judul, data, fmt) => {
+        if (!data.length) return;
+        const det = document.createElement('details');
+        const sum = document.createElement('summary'); sum.textContent = judul + ' (' + data.length + ')';
+        const ul = document.createElement('ul');
+        data.forEach(x => {
+          const li = document.createElement('li'); fmt(li, x); ul.appendChild(li);
+        });
+        det.appendChild(sum); det.appendChild(ul); kotak.appendChild(det);
+      };
+      const isi = (li, utama, kecil) => {
+        li.appendChild(document.createTextNode(utama));
+        if (kecil) { const s = document.createElement('small'); s.textContent = ' · ' + kecil; li.appendChild(s); }
+      };
+      const itemMaaf = jenis => (li, x) => {
+        isi(li, x.menit ? x.tgl + ' — ' + x.menit + ' menit' : x.tgl, x.ket);
+        const st = String(x.status || '');
+        if (st) {
+          const b = document.createElement('span');
+          b.className = 'badge ' + (st.indexOf('Disetujui') === 0 ? 'bg-setuju' : st === 'Ditolak' ? 'bg-tolak' : 'bg-tunggu');
+          b.textContent = st === 'Menunggu' ? 'Menunggu persetujuan' : st;
+          li.appendChild(b);
+          if (st === 'Ditolak' && x.catatanAdmin) {
+            const c = document.createElement('span'); c.className = 'tolak-ket'; c.textContent = 'Catatan admin: ' + x.catatanAdmin;
+            li.appendChild(c);
+          }
+        }
+        if (x.boleh) {
+          const t = document.createElement('button'); t.type = 'button'; t.className = 'ajukan';
+          t.textContent = st === 'Ditolak' ? 'Ajukan ulang' : 'Ajukan maaf';
+          t.onclick = () => bukaMaaf(x, jenis);
+          li.appendChild(t);
+        }
+      };
+      blok('Rincian terlambat', r.telat.rincian, itemMaaf('terlambat'));
+      blok('Rincian pulang cepat', cp.rincian, itemMaaf('pulang cepat'));
+      kotak.querySelectorAll('details').forEach(d => {
+        if (d.querySelector('.ajukan, .badge')) d.open = true;
+      });
+      blok('Rincian alfa', r.alfa.rincian, itemMaaf('alfa'));
+      blok('Rincian izin', r.izin.rincian, (li, x) => isi(li, x.tgl, x.ket));
+      blok('Rincian sakit', r.sakit.rincian, (li, x) => isi(li, x.tgl, x.ket));
+      if (!kotak.children.length) {
+        const p = document.createElement('div'); p.className = 'catatan tengah';
+        p.textContent = 'Tidak ada keterlambatan, pulang cepat, alfa, izin, maupun sakit. Pertahankan! 👍';
+        kotak.appendChild(p);
+      }
+    } catch (err) {
+      if (!sesiHabis(err)) { $('rJudul').textContent = 'Rekap gagal dimuat'; ['rTelat', 'rCepat', 'rAlfa', 'rIzin', 'rSakit'].forEach(id => $(id).textContent = '–'); }
+    }
+  }
+  function aturStatus(s) {
+    $('sMasuk').textContent = s.masuk || '–';
+    $('sPulang').textContent = s.pulang || '–';
+    const tidakHadir = s.keterangan === 'Izin' || s.keterangan === 'Sakit';
+    const terbuka = s.terbuka !== undefined ? s.terbuka : (!!s.masuk && !s.pulang);
+    const jumlah = s.jumlahSesi !== undefined ? s.jumlahSesi : (s.masuk ? 1 : 0);
+    // Semua shift terjadwal hari ini sudah diabsen -> tidak ada shift berikutnya
+    const jdw = s.jadwal || [];
+    const semuaSelesai = !terbuka && jdw.length > 0 && jdw.every(j => j.sudah);
+    $('sKet').textContent = tidakHadir ? 'Hari ini tercatat: ' + s.keterangan
+      : terbuka ? 'Sedang bertugas sejak ' + s.masuk + ' — jangan lupa absen pulang.'
+      : semuaSelesai ? 'Semua shift hari ini sudah selesai. Terima kasih!'
+      : jumlah ? jumlah + ' sesi selesai hari ini. Tekan Absen Masuk untuk shift berikutnya.' : '';
+    $('bMasuk').disabled = terbuka || tidakHadir || semuaSelesai;
+    $('bPulang').disabled = !terbuka;
+    $('bIzin').disabled = $('bSakit').disabled = jumlah > 0 || tidakHadir;
+
+    // Jam kerja fleksibel: progres total jam hari ini
+    const tg = $('sTarget');
+    if (s.targetMenit > 0) {
+      const m = s.menitHariIni || 0, t = s.targetMenit;
+      const fmt = x => Math.floor(x / 60) + ' jam ' + (x % 60) + ' menit';
+      tg.innerHTML = '';
+      const kecil = document.createElement('small'); kecil.textContent = 'Jam kerja hari ini (target ' + (t / 60) + ' jam)';
+      const teks = document.createElement('div'); teks.textContent = fmt(m) + (m >= t ? '  ✓ target tercapai' : '  · kurang ' + fmt(t - m));
+      const bar = document.createElement('div'); bar.className = 'bar';
+      const isi = document.createElement('div'); isi.className = 'isi'; isi.style.width = Math.min(100, Math.round(m / t * 100)) + '%';
+      bar.appendChild(isi); tg.appendChild(kecil); tg.appendChild(bar); tg.appendChild(teks);
+      tg.className = 'target' + (m >= t ? ' cukup' : '');
+    } else {
+      tg.className = 'target hidden';
+    }
+
+    const kotak = $('sJadwal'), jadwal = s.jadwal || [];
+    kotak.innerHTML = '';
+    kotak.classList.toggle('hidden', !jadwal.length);
+    if (!jadwal.length) return;
+    const judul = document.createElement('small');
+    judul.textContent = 'Jadwal shift hari ini';
+    kotak.appendChild(judul);
+    jadwal.forEach(j => {
+      const kelas = j.sudah ? 'sudah' : (j.lewat ? 'lewat' : 'nanti');
+      const row = document.createElement('div');
+      row.className = 'shift ' + kelas;
+      const kiri = document.createElement('span');
+      kiri.textContent = j.nama + ' · ' + j.jam;
+      const kanan = document.createElement('span');
+      kanan.className = 'st';
+      kanan.textContent = j.sudah ? '✓ Sudah absen' : (j.lewat ? (tidakHadir ? s.keterangan : 'Terlewat') : 'Belum');
+      row.appendChild(kiri); row.appendChild(kanan);
+      kotak.appendChild(row);
+    });
+  }
+
+  // Lokasi: pantau GPS maks. 20 detik, lalu cadangan lokasi jaringan/WiFi
+  let galatLokasi = '';
+  function ambilLokasi() {
+    galatLokasi = '';
+    if (!navigator.geolocation) {
+      galatLokasi = 'Browser ini tidak mendukung lokasi. Gunakan Google Chrome.';
+      return Promise.resolve(null);
+    }
+
+    const pantauGPS = () => new Promise((ok, gagal) => {
+      let terbaik = null, galatAkhir = null, beres = false, id = null, tunda = null;
+      const selesai = () => {
+        if (beres) return; beres = true;
+        if (tunda) clearTimeout(tunda);
+        if (id !== null) navigator.geolocation.clearWatch(id);
+        terbaik ? ok(terbaik) : gagal(galatAkhir || { code: 3 });
+      };
+      tunda = setTimeout(selesai, 20000);
+      id = navigator.geolocation.watchPosition(
+        p => {
+          if (!terbaik || p.coords.accuracy < terbaik.coords.accuracy) terbaik = p;
+          if (p.coords.accuracy <= 50) selesai();
+        },
+        e => { galatAkhir = e; if (e.code === 1) selesai(); },
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
+      );
+    });
+
+    const lokasiJaringan = () => new Promise((ok, gagal) =>
+      navigator.geolocation.getCurrentPosition(ok, gagal,
+        { enableHighAccuracy: false, timeout: 15000, maximumAge: 120000 }));
+
+    return pantauGPS()
+      .catch(e => { if (e && e.code === 1) throw e; return lokasiJaringan(); })
+      .then(p => ({ lat: p.coords.latitude, lng: p.coords.longitude, akurasi: Math.round(p.coords.accuracy) }))
+      .catch(e => {
+        const kode = e && e.code;
+        galatLokasi = kode === 1
+          ? 'Izin lokasi ditolak. Ketuk ikon di kiri alamat situs → Izin → Lokasi → Izinkan, lalu muat ulang halaman.'
+          : kode === 3
+            ? 'GPS terlalu lama merespons. Coba di dekat jendela/luar ruangan lalu tekan tombol lagi.'
+            : 'Lokasi tidak terbaca. Pastikan: (1) Lokasi HP aktif dengan mode akurasi tinggi, '
+              + '(2) browser diizinkan memakai Lokasi di Setelan HP → Aplikasi → Chrome → Izin → Lokasi. '
+              + 'Disarankan memakai Google Chrome.';
+        galatLokasi += ' [kode ' + kode + (e && e.message ? ': ' + e.message : '') + ']';
+        return null;
+      });
+  }
+
+  async function kirimAbsen(jenis, tombol, catatan) {
+    const semula = tombol.textContent;
+    document.querySelectorAll('#vDash .btn').forEach(b => b.dataset.d = b.disabled);
+    document.querySelectorAll('#vDash .btn').forEach(b => b.disabled = true);
+    tombol.textContent = 'Memproses…'; pesan($('mAbsen'), '', '');
+    let berhasil = false;
+    try {
+      let lok = null;
+      if (jenis === 'MASUK' || jenis === 'PULANG') {
+        tombol.textContent = 'Membaca lokasi… (maks. 30 detik)';
+        lok = await ambilLokasi();
+        if (!lok && WAJIB_LOKASI) throw new Error(galatLokasi || 'Lokasi tidak terbaca. Aktifkan GPS dan izinkan akses lokasi.');
+        tombol.textContent = 'Menyimpan…';
+      }
+      let r;
+      try {
+        r = await panggil('absen', token, jenis, lok, catatan || '', PERANGKAT);
+      } catch (e) {
+        if (String((e && e.message) || e).indexOf('SESI_HABIS') < 0) throw e;
+        if (!await loginOtomatis()) throw e;   // gagal → kembali ke form login
+        r = await panggil('absen', token, jenis, lok, catatan || '', PERANGKAT);
+      }
+      if (r.telat > 0 || r.cepat > 0) {
+        const el = $('mAbsen'); el.className = 'pesan warn'; el.textContent = '';
+        const b = document.createElement('b');
+        b.textContent = r.telat > 0 ? 'Terlambat ' + r.telat + ' menit' : 'Pulang cepat ' + r.cepat + ' menit';
+        el.appendChild(b); el.appendChild(document.createTextNode(r.pesan));
+      } else {
+        pesan($('mAbsen'), r.pesan, 'ok');
+      }
+      berhasil = true; tutupKet(); aturStatus(r.status); muatRiwayat(); muatRekap(modeRekap);
+    } catch (err) {
+      if (!sesiHabis(err)) pesan($('mAbsen'), err.message || String(err), 'err');
+    } finally {
+      tombol.textContent = semula;
+      if (!berhasil) document.querySelectorAll('#vDash .btn').forEach(b => b.disabled = b.dataset.d === 'true');
+      $('bBatal').disabled = $('bKirim').disabled = false;
+    }
+  }
+
+  $('bMasuk').onclick = () => kirimAbsen('MASUK', $('bMasuk'));
+  $('bPulang').onclick = () => kirimAbsen('PULANG', $('bPulang'));
+  function bukaKet(jenis) {
+    jenisKet = jenis; $('lKet').textContent = 'Keterangan ' + (jenis === 'IZIN' ? 'izin' : 'sakit');
+    $('iKet').value = ''; $('fKet').classList.remove('hidden'); $('iKet').focus();
+  }
+  function tutupKet() { jenisKet = null; $('fKet').classList.add('hidden'); }
+  $('bIzin').onclick = () => bukaKet('IZIN');
+  $('bSakit').onclick = () => bukaKet('SAKIT');
+  $('bBatal').onclick = tutupKet;
+  $('bKirim').onclick = () => {
+    if (!$('iKet').value.trim()) { pesan($('mAbsen'), 'Mohon isi keterangan.', 'err'); return; }
+    kirimAbsen(jenisKet, $('bKirim'), $('iKet').value);
+  };
+
+  function fmtTgl(s) {
+    const p = String(s).split('-'); if (p.length !== 3) return s;
+    return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  async function muatRiwayat() {
+    const tb = $('tRiwayat');
+    try {
+      const data = await panggil('riwayat', token, PERANGKAT);
+      tb.innerHTML = '';
+      if (!data.length) { tb.innerHTML = '<tr><td colspan="4">Belum ada data.</td></tr>'; return; }
+      data.forEach(r => {
+        const tr = document.createElement('tr');
+        [fmtTgl(r.tanggal), r.masuk || '–', r.pulang || '–', r.ket || ''].forEach(v => {
+          const td = document.createElement('td'); td.textContent = v; tr.appendChild(td);
+        });
+        tb.appendChild(tr);
+      });
+    } catch (err) {
+      if (!sesiHabis(err)) tb.innerHTML = '<tr><td colspan="4">Gagal memuat riwayat.</td></tr>';
+    }
+  }
+
+  // ---- Pengajuan maaf keterlambatan (alasan + foto bukti) ----
+  let kunciMaaf = null, fotoMaaf = null;
+  function bukaMaaf(x, jenis) {
+    jenis = jenis || 'terlambat';
+    kunciMaaf = x.kunci; fotoMaaf = null;
+    $('tMaafJudul').textContent = 'Ajukan maaf ' + (jenis === 'terlambat' ? 'keterlambatan'
+      : jenis === 'alfa' ? 'alfa (tidak hadir)' : jenis);
+    $('tMaafInfo').textContent = jenis === 'alfa' ? x.tgl + ' · tidak hadir · ' + x.ket
+      : x.tgl + ' · ' + x.ket + ' · ' + jenis + ' ' + x.menit + ' menit';
+    $('iAlasan').value = ''; $('iFoto').value = '';
+    $('pFoto').classList.add('hidden'); $('pFoto').removeAttribute('src');
+    pesan($('mMaaf'), '', '');
+    $('vMaaf').classList.remove('hidden');
+    $('vMaaf').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function tutupMaaf() { kunciMaaf = null; fotoMaaf = null; $('vMaaf').classList.add('hidden'); }
+  $('bMaafBatal').onclick = tutupMaaf;
+
+  // Perkecil foto (maks. 1280 px, JPEG) agar cepat terkirim
+  function kompresFoto(file) {
+    return new Promise((ok, gagal) => {
+      const url = URL.createObjectURL(file), img = new Image();
+      img.onload = () => {
+        const k = Math.min(1, 1280 / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        ok(c.toDataURL('image/jpeg', 0.75));
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); gagal(new Error('Foto tidak bisa dibaca. Coba ambil foto lain.')); };
+      img.src = url;
+    });
+  }
+  $('iFoto').onchange = async () => {
+    const f = $('iFoto').files && $('iFoto').files[0];
+    fotoMaaf = null; $('pFoto').classList.add('hidden');
+    if (!f) return;
+    try {
+      const data = await kompresFoto(f);
+      fotoMaaf = data.split(',')[1];
+      $('pFoto').src = data; $('pFoto').classList.remove('hidden');
+      pesan($('mMaaf'), '', '');
+    } catch (e) { pesan($('mMaaf'), e.message, 'err'); }
+  };
+  $('bMaafKirim').onclick = async () => {
+    const alasan = $('iAlasan').value.trim();
+    if (alasan.length < 10) return pesan($('mMaaf'), 'Tulis alasan minimal 10 huruf.', 'err');
+    if (!fotoMaaf) return pesan($('mMaaf'), 'Lampirkan foto bukti terlebih dahulu.', 'err');
+    const b = $('bMaafKirim'); b.disabled = true; $('bMaafBatal').disabled = true; b.textContent = 'Mengirim…';
+    try {
+      const r = await panggil('ajukanMaaf', token, PERANGKAT, kunciMaaf, alasan, fotoMaaf, 'image/jpeg');
+      tutupMaaf();
+      pesan($('mAbsen'), r.pesan, 'ok');
+      muatRekap(modeRekap);
+    } catch (err) {
+      if (!sesiHabis(err)) pesan($('mMaaf'), err.message || String(err), 'err');
+    } finally {
+      b.disabled = false; $('bMaafBatal').disabled = false; b.textContent = 'Kirim pengajuan';
+    }
+  };
+
+  $('bKeluar').onclick = async () => {
+    const t = token; simpanToken(null); tampil('vLogin'); pesan($('mLogin'), '', '');
+    try { await panggil('logout', t); } catch (e) {}
+  };
+
+  // Pengaman: jika server tidak merespons dalam 25 detik, tampilkan form login
+  setTimeout(() => {
+    if (!$('vMuat').classList.contains('hidden')) {
+      tampil('vLogin');
+      pesan($('mLogin'), 'Koneksi lambat. Silakan masuk dengan nama dan ' + KOLOM_PASSWORD + '.', 'err');
+    }
+  }, 25000);
+
+  // Mulai: pulihkan sesi, atau login otomatis dari perangkat terdaftar
+  (async () => {
+    try {
+      const blokir = tampilPeringatan();
+      try {
+        const k = await panggil('konfig');
+        WAJIB_LOKASI = k.wajibLokasi !== false;
+        KOLOM_PASSWORD = k.kolomPassword || 'NIY';
+      } catch (e) {
+        tampil('vLogin');
+        pesan($('mLogin'), e.message, 'err');
+        return;
+      }
+      document.querySelectorAll('.kolomPw').forEach(x => x.textContent = KOLOM_PASSWORD);
+      $('iNik').placeholder = 'Nomor ' + KOLOM_PASSWORD;
+      $('tInfoLokasi').classList.toggle('hidden', !WAJIB_LOKASI);
+      if (blokir) return tampil('vLogin');            // iPhone di luar ikon Layar Utama / browser di dalam aplikasi
+      const t = ambilToken();
+      if (t) {
+        try {
+          const r = await panggil('cekSesi', t, PERANGKAT);
+          if (r && r.ok) { token = t; return bukaDashboard(r.profil, r.status); }
+        } catch (e) {}
+        simpanToken(null);
+      }
+      const o = await loginOtomatis();
+      if (o) return bukaDashboard(o.profil, o.status);
+      tampil('vLogin');
+    } catch (e) {
+      console.error(e);
+      tampil('vLogin');
+    }
+  })();
+</script>
+</body>
+</html>
