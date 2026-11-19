@@ -648,7 +648,7 @@
     } finally {
       tombol.textContent = semula;
       if (!berhasil) document.querySelectorAll('#vDash .btn').forEach(b => b.disabled = b.dataset.d === 'true');
-      $('bBatal').disabled = $('bKirim').disabled = false;
+      $('bBatal').disabled = $('bKirim').disabled = false;$('bMaafBatal').disabled = $('bMaafKirim').disabled = false;
     }
   }
 
@@ -694,6 +694,7 @@
   function bukaMaaf(x, jenis) {
     jenis = jenis || 'terlambat';
     kunciMaaf = x.kunci; fotoMaaf = null;
+    $('bMaafKirim').disabled = $('bMaafBatal').disabled = false;
     $('tMaafJudul').textContent = 'Ajukan maaf ' + (jenis === 'terlambat' ? 'keterlambatan'
       : jenis === 'alfa' ? 'alfa (tidak hadir)' : jenis);
     $('tMaafInfo').textContent = jenis === 'alfa' ? x.tgl + ' · tidak hadir · ' + x.ket
