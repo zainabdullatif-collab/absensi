@@ -55,6 +55,16 @@
   details ul { margin:8px 0 2px; padding-left:18px; font-size:14px; }
   details li { margin-bottom:5px; }
   details li small { color:var(--redup); }
+  .grafik { margin-top:14px; border-top:1px solid #e6eaef; padding-top:12px; }
+  .grafik .judul-g { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+  .grafik .judul-g small { font-size:12px; color:var(--redup); }
+  .grafik .judul-g b { font-size:14px; }
+  .bar-baris { display:grid; grid-template-columns:96px 1fr 64px; align-items:center; gap:8px; margin:7px 0; font-size:13px; }
+  .bar-baris .lb { color:var(--teks); }
+  .bar-baris .jalur { height:14px; background:var(--abu); border-radius:7px; overflow:hidden; }
+  .bar-baris .isi-b { height:100%; border-radius:7px; transition:width .4s; }
+  .bar-baris .nl { text-align:right; font-weight:700; white-space:nowrap; }
+  .bar-baris .nl small { font-weight:400; color:var(--redup); }
   .badge { display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; margin-left:4px; }
   .bg-tunggu { background:#fef0e0; color:#a14d00; } .bg-setuju { background:#e6f4ea; color:#1e8e3e; }
   .bg-tolak { background:#fde8e7; color:#c5221f; }
@@ -170,6 +180,7 @@
         <div class="r-i"><small>Izin</small><b id="rIzin">–</b><span>hari</span></div>
         <div class="r-s"><small>Sakit</small><b id="rSakit">–</b><span>hari</span></div>
       </div>
+      <div id="rGrafik" class="grafik"></div>
       <div id="rRinci"></div>
       <div class="catatan">Angka bisa berubah bila admin melakukan koreksi atau memberi dispensasi.</div>
     </div>
@@ -205,11 +216,26 @@
 </main>
 
 <script>
+  // Penjaga: bila skrip utama rusak (mis. salah tempel), tampilkan pesan, bukan "Memuat…" selamanya.
+  window.__galat = '';
+  window.addEventListener('error', function (e) { window.__galat = window.__galat || (e.message + (e.lineno ? ' (baris ' + e.lineno + ')' : '')); });
+  setTimeout(function () {
+    var m = document.getElementById('vMuat');
+    if (window.__siap || !m || m.classList.contains('hidden')) return;
+    m.innerHTML = '<b>Halaman gagal dimuat.</b><br>' +
+      (window.__galat ? 'Galat: ' + window.__galat.replace(/</g, '&lt;') + '<br>' : 'Periksa koneksi internet.<br>') +
+      '<button onclick="location.reload()" style="margin-top:10px;padding:10px 18px">Muat ulang</button>';
+  }, 15000);
+</script>
+<!-- Alamat server disimpan di file terpisah config.js, supaya index.html bisa diganti utuh tanpa diedit -->
+<script src="config.js?v=1"></script>
+<script>
   // =====================================================================
-  //  ALAMAT SERVER: isi dengan URL Web App Apps Script (yang berakhiran /exec)
-  //  Apps Script → Terapkan → Kelola deployment → salin "URL aplikasi web".
+  //  ALAMAT SERVER diambil dari config.js (isi: var API_URL_SERVER = '...../exec';)
+  //  Tidak perlu mengedit index.html saat memperbarui halaman.
   // =====================================================================
-  const API_URL = 'https://script.google.com/macros/s/AKfycbylbZcl1qtSCosIhc4Y_9bMM10PoRnap-kq1ayL0Ms-Ys2O8kwbKoimw0rziEp9ZEuzHw/exec';
+  const API_URL = window.API_URL_SERVER || 'GANTI_DENGAN_URL_WEB_APP_/exec';
+  window.__siap = true;
 
   let WAJIB_LOKASI = true, KOLOM_PASSWORD = 'NIY';
   const $ = id => document.getElementById(id);
@@ -332,7 +358,7 @@
   // Panggil fungsi di server (Apps Script) lewat internet
   async function panggil(fn, ...args) {
     if (API_URL.indexOf('/exec') < 0 || API_URL.indexOf('GANTI') > -1) {
-      throw new Error('Admin belum mengisi alamat server (API_URL) di halaman ini.');
+      throw new Error('Alamat server belum diisi. Admin: buat file config.js di GitHub berisi alamat Web App.');
     }
     const ctrl = window.AbortController ? new AbortController() : null;
     const tunda = ctrl ? setTimeout(() => ctrl.abort(), 90000) : null;
@@ -442,7 +468,7 @@
     $('bRBini').classList.toggle('aktif', m === 0);
     $('bRBlalu').classList.toggle('aktif', m === 1);
     ['rTelat', 'rCepat', 'rAlfa', 'rIzin', 'rSakit'].forEach(id => $(id).textContent = '…');
-    $('rTelatM').textContent = ''; $('rCepatM').textContent = ''; $('rRinci').innerHTML = '';
+    $('rTelatM').textContent = ''; $('rCepatM').textContent = ''; $('rRinci').innerHTML = ''; $('rGrafik').innerHTML = '';
     try {
       const r = await panggil('rekapSaya', token, PERANGKAT, m);
       if (m !== modeRekap) return;                      // pengguna sudah pindah tab
@@ -457,6 +483,7 @@
       $('rAlfaM').textContent = 'hari' + (r.alfa.jumlah !== ah ? ' · ' + r.alfa.jumlah + ' shift' : '');
       $('rIzin').textContent = r.izin.jumlah;
       $('rSakit').textContent = r.sakit.jumlah;
+      gambarGrafik(r, cp, ah);
       const kotak = $('rRinci');
       const blok = (judul, data, fmt) => {
         if (!data.length) return;
@@ -508,6 +535,36 @@
     } catch (err) {
       if (!sesiHabis(err)) { $('rJudul').textContent = 'Rekap gagal dimuat'; ['rTelat', 'rCepat', 'rAlfa', 'rIzin', 'rSakit'].forEach(id => $(id).textContent = '–'); }
     }
+  }
+  // Diagram kehadiran: batang mendatar per kategori (hari / kali)
+  function gambarGrafik(r, cp, alfaHari) {
+    const g = $('rGrafik'); g.innerHTML = '';
+    const hadir = r.hadir ? r.hadir.hari : null;
+    const data = [
+      ['Hadir', hadir, 'hari', '#1e8e3e'],
+      ['Terlambat', r.telat.kali, 'kali', '#e37400'],
+      ['Pulang cepat', cp.kali, 'kali', '#f2b134'],
+      ['Alfa', alfaHari, 'hari', '#c5221f'],
+      ['Izin', r.izin.jumlah, 'hari', '#2e6da4'],
+      ['Sakit', r.sakit.jumlah, 'hari', '#8e63ce']
+    ].filter(d => d[1] !== null && d[1] !== undefined);
+    const maks = Math.max(1, ...data.map(d => d[1]));
+    const head = document.createElement('div'); head.className = 'judul-g';
+    const t = document.createElement('b'); t.textContent = 'Diagram kehadiran';
+    const pct = document.createElement('small');
+    if (hadir !== null && hadir + alfaHari > 0) pct.textContent = 'Kehadiran ' + Math.round(hadir / (hadir + alfaHari) * 100) + '%';
+    head.appendChild(t); head.appendChild(pct); g.appendChild(head);
+    data.forEach(d => {
+      const row = document.createElement('div'); row.className = 'bar-baris';
+      const lb = document.createElement('span'); lb.className = 'lb'; lb.textContent = d[0];
+      const jalur = document.createElement('div'); jalur.className = 'jalur';
+      const isi = document.createElement('div'); isi.className = 'isi-b';
+      isi.style.background = d[3]; isi.style.width = (d[1] ? Math.max(3, d[1] / maks * 100) : 0) + '%';
+      jalur.appendChild(isi);
+      const nl = document.createElement('span'); nl.className = 'nl'; nl.textContent = d[1] + ' ';
+      const sat = document.createElement('small'); sat.textContent = d[2]; nl.appendChild(sat);
+      row.appendChild(lb); row.appendChild(jalur); row.appendChild(nl); g.appendChild(row);
+    });
   }
   function aturStatus(s) {
     $('sMasuk').textContent = s.masuk || '–';
@@ -644,13 +701,33 @@
       }
       berhasil = true; tutupKet(); aturStatus(r.status); muatRiwayat(); muatRekap(modeRekap);
     } catch (err) {
-      if (!sesiHabis(err)) pesan($('mAbsen'), err.message || String(err), 'err');
+      if (!sesiHabis(err)) { pesan($('mAbsen'), err.message || String(err), 'err'); gagalAbsen = true; }
     } finally {
       tombol.textContent = semula;
       if (!berhasil) document.querySelectorAll('#vDash .btn').forEach(b => b.disabled = b.dataset.d === 'true');
-      $('bBatal').disabled = $('bKirim').disabled = false;$('bMaafBatal').disabled = $('bMaafKirim').disabled = false;
+      $('bBatal').disabled = $('bKirim').disabled = false;
+      $('bMaafBatal').disabled = $('bMaafKirim').disabled = false;   // tombol form pengajuan maaf ikut aktif lagi
+      if (gagalAbsen) { gagalAbsen = false; segarkanStatus(); }       // tombol mungkin keliru karena tampilan lama
     }
   }
+  let gagalAbsen = false;
+
+  // Perbarui status tombol dari server. Dipanggil saat absen ditolak dan saat aplikasi dibuka lagi
+  // dari latar belakang (HP sering menampilkan halaman lama tanpa memuat ulang).
+  async function segarkanStatus() {
+    if (!token || $('vDash').classList.contains('hidden')) return;
+    try {
+      const r = await panggil('cekSesi', token, PERANGKAT);
+      if (r && r.ok) aturStatus(r.status);
+    } catch (e) {}
+  }
+  let disembunyikanSejak = 0;
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { disembunyikanSejak = Date.now(); return; }
+    if (disembunyikanSejak && Date.now() - disembunyikanSejak > 60000 && token && !$('vDash').classList.contains('hidden')) {
+      segarkanStatus(); muatRiwayat(); muatRekap(modeRekap);
+    }
+  });
 
   $('bMasuk').onclick = () => kirimAbsen('MASUK', $('bMasuk'));
   $('bPulang').onclick = () => kirimAbsen('PULANG', $('bPulang'));
